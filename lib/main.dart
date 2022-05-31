@@ -92,7 +92,8 @@ class _HomeState extends State<Home> {
         }
       },
       child: Scaffold(
-        body: Center(
+        body: Padding(
+          padding: const EdgeInsets.only(top: 200),
           child: Column(
             children: [
               Center(
@@ -101,9 +102,10 @@ class _HomeState extends State<Home> {
                       BlocProvider.of<SmsListenerBloc>(context).add(
                     AllowSmsListener(),
                   ),
-                  child: Text('kek'),
+                  child: Text('Push me for allow sms listener'),
                 ),
               ),
+              SizedBox(height: 30),
               PinInputTextField(
                 pinLength: 4,
                 keyboardType: TextInputType.number,
