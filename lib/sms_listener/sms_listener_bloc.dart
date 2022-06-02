@@ -15,7 +15,8 @@ class SmsListenerBloc extends Bloc<SmsListenerEvent, SmsListenerState> {
   void _denySmsListening(
     DenySmsListener event,
     Emitter<SmsListenerState> emit,
-  ) {
+  ) async {
+    await Permission.sms.request();
     emit(NoneSmsListening());
   }
 
@@ -23,12 +24,11 @@ class SmsListenerBloc extends Bloc<SmsListenerEvent, SmsListenerState> {
     AllowSmsListener event,
     Emitter<SmsListenerState> emit,
   ) async {
-    await Permission.sms.request();
     if (await Permission.sms.status.isGranted) {
       emit(SmsListening());
-    } else {
-      emit(NoneSmsListening());
+      return;
     }
+    emit(NoneSmsListening());
   }
 
   void _smsFound(
