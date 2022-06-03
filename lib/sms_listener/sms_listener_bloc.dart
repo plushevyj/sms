@@ -16,7 +16,9 @@ class SmsListenerBloc extends Bloc<SmsListenerEvent, SmsListenerState> {
     DenySmsListener event,
     Emitter<SmsListenerState> emit,
   ) async {
-    await Permission.sms.request();
+    try {
+      await Permission.sms.request();
+    } catch (_) {}
     emit(NoneSmsListening());
   }
 
@@ -36,13 +38,17 @@ class SmsListenerBloc extends Bloc<SmsListenerEvent, SmsListenerState> {
     Emitter<SmsListenerState> emit,
   ) {
     String basicPartOfMessage = 'Ваш код для входа в Stream';
-    if (basicPartOfMessage == event.message.split(' - ')[1]) {
-      String otp = event.message.split(' - ')[0];
-      if (otp.length == 4 && int.tryParse(otp) != null) {
-        emit(SmsSuccess(otp));
-        return;
+    try {
+      List<String> splitMessage = event.message.split(' - ');
+      if (basicPartOfMessage == splitMessage[1]) {
+        String otp = splitMessage[0];
+        print(otp);
+        if (otp.length == 4 && int.tryParse(otp) != null) {
+          emit(SmsSuccess(otp));
+          return;
+        }
       }
-    }
+    } catch (_) {}
     emit(NoneSmsListening());
   }
 }
