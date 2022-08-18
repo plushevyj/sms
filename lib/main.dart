@@ -6,7 +6,7 @@ import 'package:pin_input_text_field/pin_input_text_field.dart';
 import 'package:sms_listener/sms_listener/sms_listener_bloc.dart';
 
 void main() {
-  runApp(App());
+  runApp(const App());
 }
 
 class App extends StatelessWidget {
@@ -15,8 +15,8 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<SmsListenerBloc>(
-      create: (context) => SmsListenerBloc()..add(DenySmsListener()),
-      child: AppView(),
+      create: (context) => SmsListenerBloc(),
+      child: const AppView(),
     );
   }
 }
@@ -26,7 +26,7 @@ class AppView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       home: Home(),
     );
   }
@@ -40,16 +40,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  late final SmsListenerBloc smsListenerBloc;
-  late TextEditingController controller;
-
-  @override
-  void initState() {
-    controller = TextEditingController();
-    smsListenerBloc = BlocProvider.of<SmsListenerBloc>(context)
-      ..add(DenySmsListener());
-    super.initState();
-  }
+  final controller = TextEditingController();
 
   @override
   void dispose() {
@@ -64,31 +55,21 @@ class _HomeState extends State<Home> {
       listener: (context, state) async {
         String? smsBody;
         if (state is SmsListening) {
-          print(BlocProvider.of<SmsListenerBloc>(context).state);
           try {
             smsBody = await AltSmsAutofill().listenForSms;
           } finally {
             if (smsBody == null) {
-              BlocProvider.of<SmsListenerBloc>(context).add(
-                DenySmsListener(),
-              );
+              context.read<SmsListenerBloc>().add(const DenySmsListener());
             } else {
-              BlocProvider.of<SmsListenerBloc>(context).add(
-                SmsFound(smsBody),
-              );
+              context.read<SmsListenerBloc>().add(SmsFound(smsBody));
             }
           }
           if (!mounted) return;
         } else if (state is SmsSuccess) {
-          print(BlocProvider.of<SmsListenerBloc>(context).state);
-          setState(() {
-            controller.text = state.otp;
-          });
-          BlocProvider.of<SmsListenerBloc>(context).add(
-            DenySmsListener(),
-          );
-        } else {
-          print(BlocProvider.of<SmsListenerBloc>(context).state);
+          controller.text = state.otp;
+          controller.selection =
+              TextSelection.collapsed(offset: controller.text.length);
+          context.read<SmsListenerBloc>().add(const DenySmsListener());
         }
       },
       child: Scaffold(
@@ -98,14 +79,13 @@ class _HomeState extends State<Home> {
             children: [
               Center(
                 child: ElevatedButton(
-                  onPressed: () =>
-                      BlocProvider.of<SmsListenerBloc>(context).add(
-                    AllowSmsListener(),
-                  ),
-                  child: Text('Push me for allow sms listener'),
+                  onPressed: () => context
+                      .read<SmsListenerBloc>()
+                      .add(const AllowSmsListener()),
+                  child: const Text('Push me for allow sms listener'),
                 ),
               ),
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               PinInputTextField(
                 pinLength: 4,
                 keyboardType: TextInputType.number,
@@ -114,28 +94,22 @@ class _HomeState extends State<Home> {
                   FilteringTextInputFormatter.allow(RegExp(r'(\d+)')),
                 ],
                 cursor: Cursor(
-                  color: Color(0xFF000000),
+                  color: const Color(0xFF000000),
                   enabled: true,
                   width: 1,
                 ),
                 autoFocus: true,
                 decoration: BoxLooseDecoration(
                   strokeWidth: 0,
-                  bgColorBuilder: FixedColorListBuilder([
-                    Color(0xFFEEF2F5),
-                    Color(0xFFEEF2F5),
-                    Color(0xFFEEF2F5),
-                    Color(0xFFEEF2F5),
-                  ]),
+                  bgColorBuilder: FixedColorListBuilder(
+                    List.generate(4, (index) => const Color(0xFFEEF2F5)),
+                  ),
                   obscureStyle: ObscureStyle(
                     isTextObscure: false,
                   ),
-                  strokeColorBuilder: FixedColorListBuilder([
-                    Color(0xFFEEF2F5),
-                    Color(0xFFEEF2F5),
-                    Color(0xFFEEF2F5),
-                    Color(0xFFEEF2F5),
-                  ]),
+                  strokeColorBuilder: FixedColorListBuilder(
+                    List.generate(4, (index) => const Color(0xFFEEF2F5)),
+                  ),
                 ),
               ),
             ],

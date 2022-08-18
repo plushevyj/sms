@@ -7,14 +7,17 @@ abstract class SmsListenerState extends Equatable {
   List<Object> get props => [];
 }
 
-class NoneSmsListening extends SmsListenerState {}
+class NoneSmsListening extends SmsListenerState {
+  const NoneSmsListening();
+}
 
-class SmsListening extends SmsListenerState {}
+class SmsListening extends SmsListenerState {
+  const SmsListening();
+}
 
 class SmsSuccess extends SmsListenerState {
   final String otp;
-
-  SmsSuccess(this.otp);
+  const SmsSuccess(this.otp);
 
   @override
   List<Object> get props => [otp];

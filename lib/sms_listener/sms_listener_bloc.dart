@@ -6,7 +6,7 @@ part 'sms_listener_event.dart';
 part 'sms_listener_state.dart';
 
 class SmsListenerBloc extends Bloc<SmsListenerEvent, SmsListenerState> {
-  SmsListenerBloc() : super(NoneSmsListening()) {
+  SmsListenerBloc() : super(const NoneSmsListening()) {
     on<DenySmsListener>(_denySmsListening);
     on<AllowSmsListener>(_allowSmsListening);
     on<SmsFound>(_smsFound);
@@ -15,40 +15,40 @@ class SmsListenerBloc extends Bloc<SmsListenerEvent, SmsListenerState> {
   void _denySmsListening(
     DenySmsListener event,
     Emitter<SmsListenerState> emit,
-  ) async {
-    try {
-      await Permission.sms.request();
-    } catch (_) {}
-    emit(NoneSmsListening());
+  ) {
+    emit(const NoneSmsListening());
   }
 
   void _allowSmsListening(
     AllowSmsListener event,
     Emitter<SmsListenerState> emit,
   ) async {
-    if (await Permission.sms.status.isGranted) {
-      emit(SmsListening());
-      return;
+    try {
+      await Permission.sms.request();
+      if (await Permission.sms.status.isGranted) {
+        emit(const SmsListening());
+      }
+    } finally {
+      emit(const NoneSmsListening());
     }
-    emit(NoneSmsListening());
   }
 
   void _smsFound(
     SmsFound event,
     Emitter<SmsListenerState> emit,
   ) {
-    String basicPartOfMessage = 'Ваш код для входа в Stream';
+    String basicPartOfMessage = 'Ваш код для входа в StreamPlatform';
     try {
       List<String> splitMessage = event.message.split(' - ');
       if (basicPartOfMessage == splitMessage[1]) {
         String otp = splitMessage[0];
-        print(otp);
         if (otp.length == 4 && int.tryParse(otp) != null) {
           emit(SmsSuccess(otp));
           return;
         }
       }
-    } catch (_) {}
-    emit(NoneSmsListening());
+    } finally {
+      emit(const NoneSmsListening());
+    }
   }
 }
